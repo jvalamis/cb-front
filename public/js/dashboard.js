@@ -8,9 +8,7 @@ class DockerService {
     this.config = {
       host: "165.227.19.34",
       username: "root",
-      privateKey: `-----BEGIN OPENSSH PRIVATE KEY-----
-your_key_here
------END OPENSSH PRIVATE KEY-----`,
+      privateKey: CONFIG.sshKey,
     };
   }
 

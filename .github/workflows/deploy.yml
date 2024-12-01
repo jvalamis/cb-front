@@ -23,6 +23,9 @@ jobs:
           # Log the values we're using (without exposing secrets)
           echo "Using callback URL: ${{ secrets.CALLBACK_URL }}"
 
+          # Create config.js with SSH key
+          echo "const CONFIG = { sshKey: \`${{ secrets.DROPLET_SSH_KEY }}\` };" > build/js/config.js
+
           # Create auth-config.js with OAuth settings
           echo "const AUTH_CONFIG = {
             clientId: '${{ secrets.AUTH_CLIENT_ID }}',
