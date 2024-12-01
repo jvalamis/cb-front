@@ -1,13 +1,7 @@
 class DockerService {
   constructor() {
     console.log("Initializing DockerService...");
-    if (!isAuthenticated()) {
-      console.log("Not authenticated, redirecting to login...");
-      window.location.href = "/cb-front/login.html";
-      return;
-    }
 
-    console.log("User authenticated, setting up SSH config...");
     this.config = {
       host: CONFIG.host,
       username: CONFIG.username,
@@ -25,34 +19,54 @@ class DockerService {
       throw new Error("SSH2 library not loaded. Check script includes.");
     }
     console.log("SSH2 library found:", window.SSH2);
+  }
 
-    console.log("Initializing SSH client...");
+  async init() {
+    console.log("Initializing dashboard...");
+    if (!isAuthenticated()) {
+      console.log("Not authenticated, redirecting to login...");
+      window.location.href = "/cb-front/login.html";
+      return;
+    }
+
+    const containersDiv = document.getElementById("containers");
+    if (!containersDiv) {
+      console.error("Container div not found!");
+      return;
+    }
+    console.log("Found containers div, fetching containers...");
+
     try {
-      this.ssh = new window.SSH2.Client();
+      const containers = await this.getContainers();
+      console.log("Successfully fetched containers, rendering...");
+      containersDiv.innerHTML = this.renderContainers(containers);
+      console.log("Containers rendered to DOM");
     } catch (error) {
-      console.error("Error initializing SSH client:", error);
-      throw error;
+      console.error("Dashboard init error:", error);
+      containersDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      console.error("Error displayed to user");
     }
   }
 
   async getContainers() {
     try {
       console.log("Attempting SSH connection...");
-      await this.ssh.connect(this.config);
+      const ssh = new NodeSSH();
+      await ssh.connect(this.config);
       console.log("SSH connected successfully!");
 
       console.log("Executing docker ps command...");
       const command = 'docker ps --format "{{json .}}"';
       console.log("Command:", command);
 
-      const result = await this.ssh.exec(command);
+      const result = await ssh.execCommand(command);
       console.log("Raw docker ps result:", result);
 
-      this.ssh.disconnect();
+      await ssh.dispose();
       console.log("SSH disconnected");
 
       const containers = JSON.parse(
-        `[${result.split("\n").filter(Boolean).join(",")}]`
+        `[${result.stdout.split("\n").filter(Boolean).join(",")}]`
       );
       console.log("Parsed containers:", containers);
       console.log("Number of containers found:", containers.length);
@@ -71,27 +85,6 @@ class DockerService {
       console.error("Error connecting to:", this.config.host);
       console.error("With username:", this.config.username);
       throw error;
-    }
-  }
-
-  async init() {
-    console.log("Initializing dashboard...");
-    const containersDiv = document.getElementById("containers");
-    if (!containersDiv) {
-      console.error("Container div not found!");
-      return;
-    }
-    console.log("Found containers div, fetching containers...");
-
-    try {
-      const containers = await this.getContainers();
-      console.log("Successfully fetched containers, rendering...");
-      containersDiv.innerHTML = this.renderContainers(containers);
-      console.log("Containers rendered to DOM");
-    } catch (error) {
-      console.error("Dashboard init error:", error);
-      containersDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
-      console.error("Error displayed to user");
     }
   }
 
