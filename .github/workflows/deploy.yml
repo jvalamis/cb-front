@@ -1,5 +1,11 @@
 name: deploy cb-front
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  actions: read
+
 on:
   push:
     branches:
@@ -10,29 +16,27 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
-      packages-read: read
-
+      id-token: write
     steps:
       - uses: actions/checkout@v3
 
-      # Build and push Docker image
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/${{ github.repository_owner }}/cb-front:latest
           build-args: |
             PORT=3000
             NODE_ENV=production
@@ -45,19 +49,20 @@ jobs:
             DROPLET_USER=${{ secrets.DROPLET_USER }}
             DROPLET_SSH_KEY=${{ secrets.DROPLET_SSH_KEY }}
 
-      # Deploy to Digital Ocean
-      - name: Deploy to Digital Ocean
+      - name: Deploy to DigitalOcean
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DROPLET_IP }}
-          username: ${{ secrets.DROPLET_USER }}
+          username: root
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker pull ghcr.io/${{ github.repository }}:latest
+            set -x  # Enable debug mode
+            # One-time login for this session
+            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+            # Pull and run container
+            docker pull ghcr.io/${{ github.repository_owner }}/cb-front:latest
             docker stop cb-front || true
             docker rm cb-front || true
-            docker run -d \
-              --name cb-front \
-              -p 3001:3000 \
-              ghcr.io/${{ github.repository }}:latest
+            docker run -d --name cb-front -p 3001:3000 --restart always \
+              ghcr.io/${{ github.repository_owner }}/cb-front:latest
