@@ -1,7 +1,9 @@
 // AUTH_CONFIG is loaded from auth-config.js
 
 function login() {
-  window.location.href = `https://github.com/login/oauth/authorize?client_id=${AUTH_CONFIG.clientId}&redirect_uri=${AUTH_CONFIG.redirectUri}&scope=${AUTH_CONFIG.scope}`;
+  const authUrl = `https://github.com/login/oauth/authorize?client_id=${AUTH_CONFIG.clientId}&redirect_uri=${AUTH_CONFIG.redirectUri}&scope=${AUTH_CONFIG.scope}`;
+  console.log("Auth URL:", authUrl);
+  window.location.href = authUrl;
 }
 
 function isAuthenticated() {
