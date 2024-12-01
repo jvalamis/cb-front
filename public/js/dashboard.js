@@ -1,6 +1,15 @@
 class DockerService {
   constructor() {
     console.log("Initializing DockerService...");
+    console.log("Available SSH libraries:", {
+      IsomorphicSSH:
+        typeof IsomorphicSSH !== "undefined" ? "loaded" : "not loaded",
+      window: {
+        IsomorphicSSH:
+          typeof window.IsomorphicSSH !== "undefined" ? "loaded" : "not loaded",
+        SSH: typeof window.SSH !== "undefined" ? "loaded" : "not loaded",
+      },
+    });
 
     this.config = {
       host: CONFIG.host,
@@ -43,6 +52,9 @@ class DockerService {
   async getContainers() {
     try {
       console.log("Creating SSH connection...");
+      if (typeof IsomorphicSSH === "undefined") {
+        throw new Error("SSH library not loaded properly!");
+      }
       const ssh = new IsomorphicSSH();
 
       console.log("Attempting SSH connection...");
