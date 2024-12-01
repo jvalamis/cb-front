@@ -43,7 +43,7 @@ class DockerService {
   async getContainers() {
     try {
       console.log("Creating SSH connection...");
-      const ssh = new SSH2Client();
+      const ssh = new IsomorphicSSH();
 
       console.log("Attempting SSH connection...");
       await ssh.connect(this.config);
@@ -53,14 +53,14 @@ class DockerService {
       const command = 'docker ps --format "{{json .}}"';
       console.log("Command:", command);
 
-      const result = await ssh.exec(command);
+      const result = await ssh.executeCommand(command);
       console.log("Raw docker ps result:", result);
 
-      ssh.disconnect();
+      await ssh.disconnect();
       console.log("SSH disconnected");
 
       const containers = JSON.parse(
-        `[${result.split("\n").filter(Boolean).join(",")}]`
+        `[${result.stdout.split("\n").filter(Boolean).join(",")}]`
       );
       console.log("Parsed containers:", containers);
       console.log("Number of containers found:", containers.length);
