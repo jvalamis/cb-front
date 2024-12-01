@@ -44,3 +44,6 @@ pids/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Config with secrets
+public/js/config.js

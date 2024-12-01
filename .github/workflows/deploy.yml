@@ -1,66 +1,22 @@
-name: deploy cb-front
-
-permissions:
-  contents: read
-  packages: write
-  id-token: write
-  actions: read
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      # Inject SSH key during build
+      - name: Create config
+        run: |
+          echo "const CONFIG = { sshKey: \`${{ secrets.SSH_KEY }}\` };" > public/js/config.js
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/cb-front:latest
-          build-args: |
-            AUTH_CLIENT_ID=${{ secrets.AUTH_CLIENT_ID }}
-            AUTH_CLIENT_SECRET=${{ secrets.AUTH_CLIENT_SECRET }}
-            SESSION_SECRET=${{ secrets.SESSION_SECRET }}
-            CALLBACK_URL=${{ secrets.CALLBACK_URL }}
-            ALLOWED_GITHUB_USERS=${{ secrets.ALLOWED_GITHUB_USERS }}
-            DROPLET_IP=${{ secrets.DROPLET_IP }}
-            DROPLET_USER=${{ secrets.DROPLET_USER }}
-            DROPLET_SSH_KEY=${{ secrets.DROPLET_SSH_KEY }}
-
-      - name: Deploy to DigitalOcean
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.DROPLET_IP }}
-          username: root
-          key: ${{ secrets.DROPLET_SSH_KEY }}
-          script: |
-            set -x  # Enable debug mode
-            # One-time login for this session
-            docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-
-            # Pull and run container
-            docker pull ghcr.io/${{ github.repository_owner }}/cb-front:latest
-            docker stop cb-front || true
-            docker rm cb-front || true
-            docker run -d --name cb-front -p 3001:3000 --restart always \
-              ghcr.io/${{ github.repository_owner }}/cb-front:latest
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
