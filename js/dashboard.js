@@ -11,14 +11,6 @@ class DockerService {
       host: this.config.host,
       username: this.config.username,
     });
-
-    // Initialize SSH client with error checking
-    console.log("Checking SSH2 library...");
-    if (!window.SSH2) {
-      console.error("SSH2 library not loaded!");
-      throw new Error("SSH2 library not loaded. Check script includes.");
-    }
-    console.log("SSH2 library found:", window.SSH2);
   }
 
   async init() {
@@ -50,23 +42,25 @@ class DockerService {
 
   async getContainers() {
     try {
+      console.log("Creating SSH connection...");
+      const ssh = new SSH2Promise(this.config);
+
       console.log("Attempting SSH connection...");
-      const ssh = new NodeSSH();
-      await ssh.connect(this.config);
+      await ssh.connect();
       console.log("SSH connected successfully!");
 
       console.log("Executing docker ps command...");
       const command = 'docker ps --format "{{json .}}"';
       console.log("Command:", command);
 
-      const result = await ssh.execCommand(command);
+      const result = await ssh.exec(command);
       console.log("Raw docker ps result:", result);
 
-      await ssh.dispose();
+      await ssh.close();
       console.log("SSH disconnected");
 
       const containers = JSON.parse(
-        `[${result.stdout.split("\n").filter(Boolean).join(",")}]`
+        `[${result.split("\n").filter(Boolean).join(",")}]`
       );
       console.log("Parsed containers:", containers);
       console.log("Number of containers found:", containers.length);
