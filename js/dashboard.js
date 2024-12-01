@@ -2,12 +2,10 @@ class DockerService {
   constructor() {
     console.log("Initializing DockerService...");
     console.log("Available SSH libraries:", {
-      IsomorphicSSH:
-        typeof IsomorphicSSH !== "undefined" ? "loaded" : "not loaded",
+      SSH2Browser: typeof SSH2Browser !== "undefined" ? "loaded" : "not loaded",
       window: {
-        IsomorphicSSH:
-          typeof window.IsomorphicSSH !== "undefined" ? "loaded" : "not loaded",
-        SSH: typeof window.SSH !== "undefined" ? "loaded" : "not loaded",
+        SSH2Browser:
+          typeof window.SSH2Browser !== "undefined" ? "loaded" : "not loaded",
       },
     });
 
@@ -52,10 +50,10 @@ class DockerService {
   async getContainers() {
     try {
       console.log("Creating SSH connection...");
-      if (typeof IsomorphicSSH === "undefined") {
+      if (typeof SSH2Browser === "undefined") {
         throw new Error("SSH library not loaded properly!");
       }
-      const ssh = new IsomorphicSSH();
+      const ssh = new SSH2Browser();
 
       console.log("Attempting SSH connection...");
       await ssh.connect(this.config);
@@ -65,14 +63,14 @@ class DockerService {
       const command = 'docker ps --format "{{json .}}"';
       console.log("Command:", command);
 
-      const result = await ssh.executeCommand(command);
+      const result = await ssh.exec(command);
       console.log("Raw docker ps result:", result);
 
-      await ssh.disconnect();
+      await ssh.end();
       console.log("SSH disconnected");
 
       const containers = JSON.parse(
-        `[${result.stdout.split("\n").filter(Boolean).join(",")}]`
+        `[${result.split("\n").filter(Boolean).join(",")}]`
       );
       console.log("Parsed containers:", containers);
       console.log("Number of containers found:", containers.length);
