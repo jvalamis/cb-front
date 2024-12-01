@@ -99,15 +99,22 @@ app.use("/login", express.static("public/login.html"));
 
 // Auth routes
 app.get("/login", (req, res) => {
+  console.log("Login route hit");
   if (req.isAuthenticated()) {
+    console.log("User already authenticated, redirecting to /");
     res.redirect("/");
   } else {
+    console.log("Serving login page");
     res.sendFile(path.join(__dirname, "../public/login.html"));
   }
 });
 
 app.get(
   "/auth/github",
+  (req, res, next) => {
+    console.log("GitHub auth route hit");
+    next();
+  },
   passport.authenticate("github", { scope: ["user:email"] })
 );
 
