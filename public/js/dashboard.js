@@ -13,6 +13,10 @@ class DockerService {
       username: CONFIG.username,
       privateKey: CONFIG.sshKey,
     };
+    console.log("SSH Config (excluding private key):", {
+      host: this.config.host,
+      username: this.config.username,
+    });
 
     // Initialize SSH client
     console.log("Initializing SSH client...");
@@ -23,9 +27,13 @@ class DockerService {
     try {
       console.log("Attempting SSH connection...");
       await this.ssh.connect(this.config);
-      console.log("SSH connected, executing docker ps...");
+      console.log("SSH connected successfully!");
 
-      const result = await this.ssh.exec('docker ps --format "{{json .}}"');
+      console.log("Executing docker ps command...");
+      const command = 'docker ps --format "{{json .}}"';
+      console.log("Command:", command);
+
+      const result = await this.ssh.exec(command);
       console.log("Raw docker ps result:", result);
 
       this.ssh.disconnect();
@@ -35,10 +43,21 @@ class DockerService {
         `[${result.split("\n").filter(Boolean).join(",")}]`
       );
       console.log("Parsed containers:", containers);
+      console.log("Number of containers found:", containers.length);
+      containers.forEach((container, index) => {
+        console.log(`Container ${index + 1}:`, {
+          name: container.Names,
+          id: container.ID,
+          status: container.Status,
+          image: container.Image,
+        });
+      });
       return containers;
     } catch (error) {
       console.error("SSH Error:", error);
       console.error("Error stack:", error.stack);
+      console.error("Error connecting to:", this.config.host);
+      console.error("With username:", this.config.username);
       throw error;
     }
   }
@@ -46,18 +65,30 @@ class DockerService {
   async init() {
     console.log("Initializing dashboard...");
     const containersDiv = document.getElementById("containers");
+    if (!containersDiv) {
+      console.error("Container div not found!");
+      return;
+    }
+    console.log("Found containers div, fetching containers...");
+
     try {
       const containers = await this.getContainers();
-      console.log("Rendering containers:", containers);
+      console.log("Successfully fetched containers, rendering...");
       containersDiv.innerHTML = this.renderContainers(containers);
+      console.log("Containers rendered to DOM");
     } catch (error) {
       console.error("Dashboard init error:", error);
       containersDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      console.error("Error displayed to user");
     }
   }
 
   renderContainers(containers) {
-    console.log("Rendering container HTML...");
+    console.log(
+      "Rendering container HTML for",
+      containers.length,
+      "containers"
+    );
     const html = containers
       .map(
         (container) => `
@@ -70,7 +101,7 @@ class DockerService {
     `
       )
       .join("");
-    console.log("Generated HTML:", html);
+    console.log("Generated HTML length:", html.length);
     return html;
   }
 }
