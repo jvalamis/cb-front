@@ -13,6 +13,7 @@ function isAuthenticated() {
 async function handleCallback() {
   const code = new URLSearchParams(window.location.search).get("code");
   if (code) {
+    // Could add GitHub API call here to verify user is in allowedUsers list
     sessionStorage.setItem("github_token", code);
     window.location.href = "/cb-front/";
   }
