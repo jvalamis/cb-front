@@ -10,21 +10,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      # Create directory for built files
+      - name: Create build directory
+        run: |
+          mkdir -p build
+          cp -r index.html login.html callback.html styles.css js build/
+
       # Inject configuration during build
       - name: Create config files
         run: |
           # Create config.js with SSH key
-          echo "const CONFIG = { sshKey: \`${{ secrets.DROPLET_SSH_KEY }}\` };" > public/js/config.js
+          echo "const CONFIG = { sshKey: \`${{ secrets.DROPLET_SSH_KEY }}\` };" > build/js/config.js
 
           # Create auth-config.js with OAuth settings
           echo "const AUTH_CONFIG = {
             clientId: '${{ secrets.AUTH_CLIENT_ID }}',
             redirectUri: '${{ secrets.CALLBACK_URL }}',
             scope: 'user:email'
-          };" > public/js/auth-config.js
+          };" > build/js/auth-config.js
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
+          publish_dir: ./build
