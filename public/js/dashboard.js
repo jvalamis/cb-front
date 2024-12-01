@@ -18,9 +18,21 @@ class DockerService {
       username: this.config.username,
     });
 
-    // Initialize SSH client
+    // Initialize SSH client with error checking
+    console.log("Checking SSH2 library...");
+    if (!window.SSH2) {
+      console.error("SSH2 library not loaded!");
+      throw new Error("SSH2 library not loaded. Check script includes.");
+    }
+    console.log("SSH2 library found:", window.SSH2);
+
     console.log("Initializing SSH client...");
-    this.ssh = new window.SSH2.Client();
+    try {
+      this.ssh = new window.SSH2.Client();
+    } catch (error) {
+      console.error("Error initializing SSH client:", error);
+      throw error;
+    }
   }
 
   async getContainers() {
