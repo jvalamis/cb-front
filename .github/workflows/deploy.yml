@@ -20,18 +20,16 @@ jobs:
       # Inject configuration during build
       - name: Create config files
         run: |
-          # Create config.js with SSH connection details
+          # Create config.js with DO API details
           echo "const CONFIG = {
-            sshKey: \`${{ secrets.DROPLET_SSH_KEY }}\`,
-            host: '${{ secrets.DROPLET_IP }}',
-            username: '${{ secrets.DROPLET_USER }}'
+            doApiToken: '${{ secrets.DO_API_TOKEN }}',
+            dropletId: '${{ secrets.DROPLET_ID }}'
           };" > build/js/config.js
 
           # Create auth-config.js with OAuth settings
           echo "const AUTH_CONFIG = {
             clientId: '${{ secrets.AUTH_CLIENT_ID }}',
             redirectUri: '${{ secrets.CALLBACK_URL }}',
-            allowedUsers: '${{ secrets.ALLOWED_USERS }}'.split(','),
             scope: 'user:email'
           };" > build/js/auth-config.js
 

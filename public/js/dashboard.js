@@ -1,23 +1,8 @@
 class DockerService {
   constructor() {
     console.log("Initializing DockerService...");
-    console.log("Available SSH libraries:", {
-      SSH2Browser: typeof SSH2Browser !== "undefined" ? "loaded" : "not loaded",
-      window: {
-        SSH2Browser:
-          typeof window.SSH2Browser !== "undefined" ? "loaded" : "not loaded",
-      },
-    });
-
-    this.config = {
-      host: CONFIG.host,
-      username: CONFIG.username,
-      privateKey: CONFIG.sshKey,
-    };
-    console.log("SSH Config (excluding private key):", {
-      host: this.config.host,
-      username: this.config.username,
-    });
+    this.doApiToken = CONFIG.doApiToken;
+    this.dropletId = CONFIG.dropletId;
   }
 
   async init() {
@@ -49,45 +34,52 @@ class DockerService {
 
   async getContainers() {
     try {
-      console.log("Creating SSH connection...");
-      if (typeof SSH2Browser === "undefined") {
-        throw new Error("SSH library not loaded properly!");
-      }
-      const ssh = new SSH2Browser();
-
-      console.log("Attempting SSH connection...");
-      await ssh.connect(this.config);
-      console.log("SSH connected successfully!");
-
-      console.log("Executing docker ps command...");
-      const command = 'docker ps --format "{{json .}}"';
-      console.log("Command:", command);
-
-      const result = await ssh.exec(command);
-      console.log("Raw docker ps result:", result);
-
-      await ssh.end();
-      console.log("SSH disconnected");
-
-      const containers = JSON.parse(
-        `[${result.split("\n").filter(Boolean).join(",")}]`
+      console.log("Fetching containers from Digital Ocean...");
+      const response = await fetch(
+        `https://api.digitalocean.com/v2/droplets/${this.dropletId}/containers`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.doApiToken}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
-      console.log("Parsed containers:", containers);
-      console.log("Number of containers found:", containers.length);
-      containers.forEach((container, index) => {
-        console.log(`Container ${index + 1}:`, {
-          name: container.Names,
-          id: container.ID,
-          status: container.Status,
-          image: container.Image,
-        });
-      });
-      return containers;
+
+      if (!response.ok) {
+        throw new Error(`DO API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Raw container data:", data);
+      return data.containers;
     } catch (error) {
-      console.error("SSH Error:", error);
-      console.error("Error stack:", error.stack);
-      console.error("Error connecting to:", this.config.host);
-      console.error("With username:", this.config.username);
+      console.error("DO API Error:", error);
+      throw error;
+    }
+  }
+
+  async getContainerLogs(containerId) {
+    try {
+      console.log(`Fetching logs for container ${containerId}...`);
+      const response = await fetch(
+        `https://api.digitalocean.com/v2/droplets/${this.dropletId}/containers/${containerId}/logs`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.doApiToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`DO API Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Raw log data:", data);
+      return data.logs;
+    } catch (error) {
+      console.error("DO API Error:", error);
       throw error;
     }
   }
@@ -106,12 +98,24 @@ class DockerService {
         <p>ID: ${container.ID}</p>
         <p>Status: ${container.Status}</p>
         <p>Image: ${container.Image}</p>
+        <button onclick="showLogs('${container.ID}')">View Logs</button>
       </div>
     `
       )
       .join("");
     console.log("Generated HTML length:", html.length);
     return html;
+  }
+
+  async showLogs(containerId) {
+    const logs = await this.getContainerLogs(containerId);
+    const logsDiv = document.getElementById("logs");
+    logsDiv.innerHTML = `
+      <div class="logs-container">
+        <h3>Logs for ${containerId}</h3>
+        <pre>${logs}</pre>
+      </div>
+    `;
   }
 }
 
