@@ -10,10 +10,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Inject SSH key during build
-      - name: Create config
+      # Inject configuration during build
+      - name: Create config files
         run: |
-          echo "const CONFIG = { sshKey: \`${{ secrets.SSH_KEY }}\` };" > public/js/config.js
+          # Create config.js with SSH key
+          echo "const CONFIG = { sshKey: \`${{ secrets.DROPLET_SSH_KEY }}\` };" > public/js/config.js
+
+          # Create auth-config.js with OAuth settings
+          echo "const AUTH_CONFIG = {
+            clientId: '${{ secrets.AUTH_CLIENT_ID }}',
+            redirectUri: '${{ secrets.CALLBACK_URL }}',
+            scope: 'user:email'
+          };" > public/js/auth-config.js
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
