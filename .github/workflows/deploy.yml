@@ -25,13 +25,13 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}/cb-front:latest
+          tags: ghcr.io/${{ github.repository }}:latest
           build-args: |
             PORT=3000
             NODE_ENV=production
@@ -52,10 +52,10 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
-            docker pull ghcr.io/${{ github.repository }}/cb-front:latest
+            docker pull ghcr.io/${{ github.repository }}:latest
             docker stop cb-front || true
             docker rm cb-front || true
             docker run -d \
               --name cb-front \
               -p 3001:3000 \
-              ghcr.io/${{ github.repository }}/cb-front:latest
+              ghcr.io/${{ github.repository }}:latest
