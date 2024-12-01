@@ -10,14 +10,21 @@ class DockerService {
       username: "root",
       privateKey: CONFIG.sshKey,
     };
+
+    // Initialize SSH client
+    this.ssh = new window.SSH2.Client();
   }
 
   async getContainers() {
-    const ssh = new SSH2Client();
-    await ssh.connect(this.config);
-    const result = await ssh.exec('docker ps --format "{{json .}}"');
-    ssh.disconnect();
-    return JSON.parse(`[${result.split("\n").filter(Boolean).join(",")}]`);
+    try {
+      await this.ssh.connect(this.config);
+      const result = await this.ssh.exec('docker ps --format "{{json .}}"');
+      this.ssh.disconnect();
+      return JSON.parse(`[${result.split("\n").filter(Boolean).join(",")}]`);
+    } catch (error) {
+      console.error("SSH Error:", error);
+      throw error;
+    }
   }
 
   async init() {
