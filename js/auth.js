@@ -12,6 +12,6 @@ async function handleCallback() {
   const code = new URLSearchParams(window.location.search).get("code");
   if (code) {
     sessionStorage.setItem("github_token", code);
-    window.location.href = "/index.html";
+    window.location.href = "/cb-front/";
   }
 }

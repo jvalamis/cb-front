@@ -1,7 +1,7 @@
 class DockerService {
   constructor() {
     if (!isAuthenticated()) {
-      window.location.href = "/login.html";
+      window.location.href = "/cb-front/login.html";
       return;
     }
 
