@@ -9,12 +9,12 @@ const dockerRoutes = require("./routes/docker");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Add at the top after env config
-console.log("Environment variables:");
-console.log("AUTH_CLIENT_ID:", process.env.AUTH_CLIENT_ID);
-console.log("AUTH_CLIENT_SECRET:", process.env.AUTH_CLIENT_SECRET);
-console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
-console.log("ALLOWED_GITHUB_USERS:", process.env.ALLOWED_GITHUB_USERS);
+// Remove environment variable logging
+// console.log("Environment variables:");
+// console.log("AUTH_CLIENT_ID:", process.env.AUTH_CLIENT_ID);
+// console.log("AUTH_CLIENT_SECRET:", process.env.AUTH_CLIENT_SECRET);
+// console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
+// console.log("ALLOWED_GITHUB_USERS:", process.env.ALLOWED_GITHUB_USERS);
 
 // Remove these auth logs
 // console.log("Auth Client ID:", process.env.AUTH_CLIENT_ID);
@@ -40,8 +40,8 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-      maxAge: 60 * 60 * 1000, // 1 hour
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 1000,
       httpOnly: true,
     },
   })
@@ -190,6 +190,5 @@ app.post("/api/revoke-access", isAuthenticated, (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
+  console.log(`Server started in ${process.env.NODE_ENV} mode`);
 });
