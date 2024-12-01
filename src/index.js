@@ -9,6 +9,13 @@ const dockerRoutes = require("./routes/docker");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Add at the top after env config
+console.log("Environment variables:");
+console.log("AUTH_CLIENT_ID:", process.env.AUTH_CLIENT_ID);
+console.log("AUTH_CLIENT_SECRET:", process.env.AUTH_CLIENT_SECRET);
+console.log("CALLBACK_URL:", process.env.CALLBACK_URL);
+console.log("ALLOWED_GITHUB_USERS:", process.env.ALLOWED_GITHUB_USERS);
+
 // Remove these auth logs
 // console.log("Auth Client ID:", process.env.AUTH_CLIENT_ID);
 // console.log("Callback URL:", process.env.CALLBACK_URL);
