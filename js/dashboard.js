@@ -43,10 +43,10 @@ class DockerService {
   async getContainers() {
     try {
       console.log("Creating SSH connection...");
-      const ssh = new SSH2Promise(this.config);
+      const ssh = new SSH2Client();
 
       console.log("Attempting SSH connection...");
-      await ssh.connect();
+      await ssh.connect(this.config);
       console.log("SSH connected successfully!");
 
       console.log("Executing docker ps command...");
@@ -56,7 +56,7 @@ class DockerService {
       const result = await ssh.exec(command);
       console.log("Raw docker ps result:", result);
 
-      await ssh.close();
+      ssh.disconnect();
       console.log("SSH disconnected");
 
       const containers = JSON.parse(
