@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
+
     steps:
       - uses: actions/checkout@v3
 
@@ -55,5 +57,5 @@ jobs:
             docker rm cb-front || true
             docker run -d \
               --name cb-front \
-              -p 3000:3000 \
+              -p 3001:3000 \
               ghcr.io/${{ github.repository }}/cb-front:latest

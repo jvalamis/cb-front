@@ -1,7 +1,6 @@
 {
   "name": "cb-frontend",
   "version": "1.0.0",
-  "homepage": "https://jvalamis.github.io/cb-front",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon --watch src --watch public --ext js,html,css src/index.js"
