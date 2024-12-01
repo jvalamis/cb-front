@@ -1,13 +1,10 @@
 {
   "name": "cb-frontend",
   "version": "1.0.0",
-  "main": "index.js",
   "homepage": "https://jvalamis.github.io/cb-front",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "nodemon --watch src --watch public --ext js,html,css src/index.js",
-    "build": "mkdir -p dist && cp -r public/* dist/"
+    "dev": "nodemon --watch src --watch public --ext js,html,css src/index.js"
   },
   "dependencies": {
     "dotenv": "^16.3.1",

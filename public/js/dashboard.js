@@ -1,3 +1,5 @@
+const API_BASE = "https://cb-front.ondigitalocean.app";
+
 let term;
 let currentContainers = new Map(); // Track current containers and their logs
 let isFirstLoad = true;
@@ -38,7 +40,7 @@ async function initDashboard() {
   commandInput = document.getElementById("command-input");
 
   // Only set up command line for allowed user
-  const response = await fetch("/api/current-user");
+  const response = await fetch(`${API_BASE}/api/current-user`);
   const { username } = await response.json();
 
   if (username === "jvalamis") {
@@ -99,7 +101,7 @@ async function updateContainers() {
   const containersDiv = document.getElementById("containers");
 
   try {
-    const response = await fetch("/api/docker/containers");
+    const response = await fetch(`${API_BASE}/api/docker/containers`);
     if (!response.ok) {
       throw new Error(`Connection failed: ${response.status}`);
     }
@@ -178,7 +180,9 @@ async function updateContainers() {
       }
 
       try {
-        const logsResponse = await fetch(`/api/docker/logs/${container.id}`);
+        const logsResponse = await fetch(
+          `${API_BASE}/api/docker/logs/${container.id}`
+        );
         const { logs } = await logsResponse.json();
 
         if (logs) {
@@ -235,7 +239,7 @@ async function updateContainers() {
 
 async function grantAccess(username, duration = 24) {
   try {
-    const response = await fetch("/api/grant-access", {
+    const response = await fetch(`${API_BASE}/api/grant-access`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -265,7 +269,7 @@ async function grantAccess(username, duration = 24) {
 // Make it immediately invoked when called from console
 async function listTemporaryAccess() {
   try {
-    const response = await fetch("/api/temp-access");
+    const response = await fetch(`${API_BASE}/api/temp-access`);
     const accessList = await response.json();
 
     if (accessList.length === 0) {
@@ -300,7 +304,7 @@ async function handleCommand(command) {
     }
 
     try {
-      const response = await fetch("/api/revoke-access", {
+      const response = await fetch(`${API_BASE}/api/revoke-access`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username }),
@@ -320,7 +324,7 @@ async function handleCommand(command) {
   } else {
     // Grant access
     try {
-      const response = await fetch("/api/grant-access", {
+      const response = await fetch(`${API_BASE}/api/grant-access`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: command, duration: 0.5 }), // 30 minutes
@@ -346,7 +350,7 @@ async function handleCommand(command) {
 
 async function updateAccessList() {
   try {
-    const response = await fetch("/api/temp-access");
+    const response = await fetch(`${API_BASE}/api/temp-access`);
     const accessList = await response.json();
 
     let accessSection = document.querySelector(".access-list");
