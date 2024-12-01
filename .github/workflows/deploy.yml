@@ -38,8 +38,6 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/cb-front:latest
           build-args: |
-            PORT=3000
-            NODE_ENV=production
             AUTH_CLIENT_ID=${{ secrets.AUTH_CLIENT_ID }}
             AUTH_CLIENT_SECRET=${{ secrets.AUTH_CLIENT_SECRET }}
             SESSION_SECRET=${{ secrets.SESSION_SECRET }}
