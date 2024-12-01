@@ -1,38 +1,26 @@
-name: cb-front
+name: deploy cb-front
+
 on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: "18"
 
-      - name: Create .env file
-        run: |
-          echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "NODE_ENV=production" >> .env
-          echo "GITHUB_CLIENT_ID=${{ secrets.AUTH_CLIENT_ID }}" >> .env
-          echo "GITHUB_CLIENT_SECRET=${{ secrets.AUTH_CLIENT_SECRET }}" >> .env
-          echo "SESSION_SECRET=${{ secrets.SESSION_SECRET }}" >> .env
-          echo "CALLBACK_URL=${{ secrets.CALLBACK_URL }}" >> .env
-          echo "ALLOWED_GITHUB_USERS=${{ secrets.ALLOWED_USERS }}" >> .env
-          echo "DROPLET_IP=${{ secrets.DROPLET_IP }}" >> .env
-          echo "DROPLET_USER=root" >> .env
-          echo "DROPLET_SSH_KEY=${{ secrets.DROPLET_SSH_KEY }}" >> .env
-
       - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
+        run: npm ci
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
