@@ -17,6 +17,11 @@ jobs:
           mkdir -p build
           cp -r public/* build/
 
+      # Add token masking
+      - name: Add token mask
+        run: |
+          echo "::add-mask::${{ secrets.DO_API_TOKEN }}"
+
       # Inject configuration during build
       - name: Create config files
         run: |
