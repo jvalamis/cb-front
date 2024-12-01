@@ -15,7 +15,7 @@ jobs:
       - name: Create build directory
         run: |
           mkdir -p build
-          cp -r index.html login.html callback.html styles.css js build/
+          cp -r public/* build/
 
       # Inject configuration during build
       - name: Create config files
