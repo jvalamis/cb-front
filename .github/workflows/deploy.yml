@@ -20,8 +20,8 @@ jobs:
       # Inject configuration during build
       - name: Create config files
         run: |
-          # Create config.js with SSH key
-          echo "const CONFIG = { sshKey: \`${{ secrets.DROPLET_SSH_KEY }}\` };" > build/js/config.js
+          # Log the values we're using (without exposing secrets)
+          echo "Using callback URL: ${{ secrets.CALLBACK_URL }}"
 
           # Create auth-config.js with OAuth settings
           echo "const AUTH_CONFIG = {
