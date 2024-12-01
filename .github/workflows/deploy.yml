@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: write
       packages: write
+      packages-pull: read
 
     steps:
       - uses: actions/checkout@v3
@@ -52,6 +53,7 @@ jobs:
           username: ${{ secrets.DROPLET_USER }}
           key: ${{ secrets.DROPLET_SSH_KEY }}
           script: |
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             docker pull ghcr.io/${{ github.repository }}:latest
             docker stop cb-front || true
             docker rm cb-front || true
